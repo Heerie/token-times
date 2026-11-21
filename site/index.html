@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Token Times</title>
+<meta name="description" content="A swipeable feed of the AI stories people are talking about.">
+<meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141C2A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Token Times">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <h1 class="brand">Token Times</h1>
+    <span class="count" id="count" aria-live="polite"></span>
+    <button class="view-btn" id="view-btn" type="button" aria-haspopup="dialog">
+      <span class="swatch" aria-hidden="true"></span><span id="view-name">All stories</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="icon-btn" id="refresh" type="button" aria-label="Check for new stories">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </header>
+  <main class="feed" id="feed" aria-label="Stories"></main>
+</div>
+
+<dialog class="sheet" id="views" aria-labelledby="views-title">
+  <form method="dialog">
+    <h2 id="views-title">Show</h2>
+    <div class="view-list" id="view-list"></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<template id="card-tpl">
+  <article class="card">
+    <figure class="art">
+      <img alt="" referrerpolicy="no-referrer" decoding="async">
+      <span class="poster" aria-hidden="true"></span>
+    </figure>
+    <div class="body">
+      <p class="kicker"><span class="cat"></span><time></time></p>
+      <h2 class="headline"><a target="_blank" rel="noopener"></a></h2>
+      <p class="summary"></p>
+      <p class="attention"></p>
+    </div>
+    <footer class="actions">
+      <a class="read" target="_blank" rel="noopener"></a>
+      <a class="icon-btn comments" target="_blank" rel="noopener" aria-label="Open the discussion">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>
+      </a>
+      <button class="icon-btn save" type="button" aria-pressed="false" aria-label="Save">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12v17l-6-4.2-6 4.2v-17Z" fill="var(--save-fill, none)" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn share" type="button" aria-label="Share">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </footer>
+  </article>
+</template>
+
+<script src="app.js" defer></script>
+</body>
+</html>

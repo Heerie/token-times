@@ -1,0 +1,133 @@
+# Token Times settings. Edit this file to change what the feed collects.
+
+[feed]
+retention_days = 7          # drop stories older than this
+max_items = 250             # hard cap on stories kept in the feed
+max_new_candidates = 160    # most new items sent to Claude per run (cost control)
+
+[llm]
+# Claude picks stories, merges duplicates and writes the summaries.
+#
+# backend = "claude-code" runs Claude Code (`claude -p`) on your Claude
+#   subscription: your normal login on this computer, or the
+#   CLAUDE_CODE_OAUTH_TOKEN secret (from `claude setup-token`) on GitHub.
+#   Each run uses a little of your plan's usage limits; no separate bill.
+# backend = "api" uses the Claude API with ANTHROPIC_API_KEY (billed per token).
+# If Claude can't run, the fetcher falls back to basic keyword filtering.
+backend = "claude-code"
+# claude-opus-5-5 writes best but uses your limits fastest;
+# claude-sonnet-5-5 or claude-haiku-5-5 go further on the same plan.
+model = "claude-opus-5-5"
+effort = "low"              # low | medium | high
+writer_batch_size = 8
+
+[interests]
+# Plain-language brief for the Claude editor. Rewrite it to taste.
+text = """
+- GitHub repos gaining lots of stars quickly, especially AI tools, agents and developer tooling
+- New AI tools, coding agents, agent harnesses, Claude Code and Codex plugins, skills and MCP servers
+- New models (frontier and open-weight), benchmarks, architectures and notable research papers
+- AI politics: regulation, government policy, lawsuits, copyright, chips and export controls
+- Major AI industry news: launches, funding, IPOs, acquisitions, leadership changes
+Skip: minor version bumps, listicles, SEO filler, crypto, generic tech news with no AI angle.
+"""
+
+[sources]
+hn_min_points = 60            # Hacker News stories below this are ignored
+github_new_min_stars = 150    # new repos (created in the last 7 days) need this many stars
+github_topic_min_stars = 40   # repos found through the topics below
+github_topics = ["llm", "ai-agents", "mcp", "claude-code", "agent-skills"]
+hf_paper_min_upvotes = 8      # Hugging Face daily papers
+rss_max_age_hours = 48        # ignore feed entries older than this
+
+# ai_only = true means the feed is already about AI; false means entries
+# are kept only when they mention AI.
+[[sources.rss]]
+name = "TechCrunch"
+url = "https://techcrunch.com/category/artificial-intelligence/feed/"
+ai_only = true
+
+[[sources.rss]]
+name = "The Verge"
+url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+ai_only = true
+
+[[sources.rss]]
+name = "Ars Technica"
+url = "https://arstechnica.com/ai/feed/"
+ai_only = true
+
+[[sources.rss]]
+name = "MIT Technology Review"
+url = "https://www.technologyreview.com/topic/artificial-intelligence/feed"
+ai_only = true
+
+[[sources.rss]]
+name = "The Decoder"
+url = "https://the-decoder.com/feed/"
+ai_only = true
+
+[[sources.rss]]
+name = "Wired"
+url = "https://www.wired.com/feed/tag/ai/latest/rss"
+ai_only = true
+
+[[sources.rss]]
+name = "The Guardian"
+url = "https://www.theguardian.com/technology/artificialintelligenceai/rss"
+ai_only = true
+
+[[sources.rss]]
+name = "Simon Willison"
+url = "https://simonwillison.net/atom/everything/"
+ai_only = false
+
+[[sources.rss]]
+name = "OpenAI"
+url = "https://openai.com/news/rss.xml"
+ai_only = true
+
+[[sources.rss]]
+name = "Google DeepMind"
+url = "https://deepmind.google/blog/rss.xml"
+ai_only = true
+
+[[sources.rss]]
+name = "Google AI"
+url = "https://blog.google/technology/ai/rss/"
+ai_only = true
+
+[[sources.rss]]
+name = "Hugging Face blog"
+url = "https://huggingface.co/blog/feed.xml"
+ai_only = true
+
+[[sources.rss]]
+name = "GitHub blog"
+url = "https://github.blog/feed/"
+ai_only = false
+
+[[sources.rss]]
+name = "Latent Space"
+url = "https://www.latent.space/feed"
+ai_only = true
+
+[[sources.rss]]
+name = "Import AI"
+url = "https://importai.substack.com/feed"
+ai_only = true
+
+[[sources.rss]]
+name = "Interconnects"
+url = "https://www.interconnects.ai/feed"
+ai_only = true
+
+[[sources.rss]]
+name = "Politico"
+url = "https://rss.politico.com/technology.xml"
+ai_only = false
+
+[[sources.rss]]
+name = "The Verge policy"
+url = "https://www.theverge.com/rss/policy/index.xml"
+ai_only = false
