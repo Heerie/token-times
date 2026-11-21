@@ -17,7 +17,7 @@ max_new_candidates = 160    # most new items sent to Claude per run (cost contro
 backend = "claude-code"
 # claude-opus-5-5 writes best but uses your limits fastest;
 # claude-sonnet-5-5 or claude-haiku-5-5 go further on the same plan.
-model = "claude-opus-5-5"
+model = "claude-sonnet-5-5"
 effort = "low"              # low | medium | high
 writer_batch_size = 8
 
