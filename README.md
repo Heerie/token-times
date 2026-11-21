@@ -8,14 +8,21 @@ GitHub Pages serves the result as an installable web app.
 Claude runs through **Claude Code on your Claude subscription**, so there is no
 API key and no separate bill; each run uses a little of your plan's usage.
 
-**Sources:** GitHub trending and fast-growing new repos (plus the `llm`,
+**Tech stocks come first.** Market news about the companies in `[markets]` in
+`config.toml` (share moves, earnings, guidance, analyst calls) is pinned to the
+top of the feed for 36 hours. Each market card has a headline stating the move
+and a **Why** section with the reasoning behind it. Market sources: Yahoo
+Finance (per ticker), CNBC, Bloomberg, Financial Times, Benzinga,
+Investing.com and MarketWatch.
+
+**AI sources:** GitHub trending and fast-growing new repos (plus the `llm`,
 `ai-agents`, `mcp`, `claude-code` and `agent-skills` topics), Hacker News,
 Lobsters, Hugging Face trending models and daily papers, and 18 news feeds
 (TechCrunch, The Verge, Ars Technica, MIT Technology Review, The Decoder,
 Wired, The Guardian, Politico, OpenAI, Google DeepMind, Simon Willison, Latent
 Space, Import AI, Interconnects and more). Edit `config.toml` to change them.
 
-**Categories:** GitHub repos, Tools and agents, Models and research, Policy
+**Categories:** Tech stocks, GitHub repos, Tools and agents, Models and research, Policy
 and politics, Industry. Each has its own colour; images are tinted to match.
 
 ## Put it on your phone (GitHub Pages, no server needed)

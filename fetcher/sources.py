@@ -28,6 +28,36 @@ def is_ai(text: str) -> bool:
     return bool(AI_ACRONYMS.search(text) or AI_WORDS.search(text))
 
 
+TECH_MARKET_WORDS = re.compile(
+    r"\b(tech stocks?|tech shares|chip ?stocks?|chip shares|semiconductors?|chipmakers?|"
+    r"Nasdaq|big tech|megacaps?|magnificent seven|software stocks?|AI stocks?|AI trade|AI bubble)\b",
+    re.I,
+)
+_watchlist_cache: dict[tuple, tuple] = {}
+
+
+def _watchlist(cfg: dict) -> tuple:
+    m = cfg.get("markets", {})
+    key = (tuple(m.get("tickers", [])), tuple(m.get("companies", [])))
+    if key not in _watchlist_cache:
+        names = "|".join(re.escape(c) for c in key[1])
+        tickers = "|".join(re.escape(t) for t in key[0])
+        _watchlist_cache[key] = (
+            re.compile(rf"\b({names})\b", re.I) if names else None,
+            re.compile(rf"\b({tickers})\b") if tickers else None,  # tickers: exact case
+        )
+    return _watchlist_cache[key]
+
+
+def mentions_watchlist(text: str, cfg: dict) -> bool:
+    names, tickers = _watchlist(cfg)
+    return bool((names and names.search(text)) or (tickers and tickers.search(text)))
+
+
+def is_tech_market(text: str, cfg: dict) -> bool:
+    return is_ai(text) or mentions_watchlist(text, cfg) or bool(TECH_MARKET_WORDS.search(text))
+
+
 def candidate(url: str, title: str, *, source: str, source_url: str | None = None,
               snippet: str = "", kind: str = "news", published: str | None = None,
               image: str | None = None, signals: dict | None = None,
@@ -132,7 +162,7 @@ def hackernews(cfg: dict) -> list[dict]:
             source_url=item_url, snippet=h.get("story_text") or "", kind="discussion",
             published=h.get("created_at"),
             signals={"points": h.get("points"), "comments": h.get("num_comments")},
-            ai_hint=is_ai(text),
+            ai_hint=is_ai(text) or mentions_watchlist(h.get("title", ""), cfg),
         ))
     return out
 
@@ -219,9 +249,10 @@ def _entry_image(e) -> str | None:
     return m.group(1) if m else None
 
 
-def rss_feed(feed_cfg: dict, cfg: dict) -> list[dict]:
+def rss_feed(feed_cfg: dict, cfg: dict, *, category_hint: str | None = None) -> list[dict]:
     parsed = feedparser.parse(http_get(feed_cfg["url"]))
     cutoff = now_utc() - timedelta(hours=cfg["sources"]["rss_max_age_hours"])
+    match = feed_cfg.get("match", "all")
     out = []
     for e in parsed.entries[:60]:
         link, title = e.get("link"), e.get("title")
@@ -234,10 +265,29 @@ def rss_feed(feed_cfg: dict, cfg: dict) -> list[dict]:
             continue
         body = " ".join(c.get("value", "") for c in e.get("content") or [])
         summary = e.get("summary") or body
-        if not feed_cfg.get("ai_only") and not is_ai(f"{title} {clean_text(summary)[:600]}"):
+        text = f"{title} {clean_text(summary)[:600]}"
+        if match == "ai" and not is_ai(text):
+            continue
+        if match == "tech" and not is_tech_market(text, cfg):
             continue
         out.append(candidate(
             link, title, source=feed_cfg["name"], snippet=summary, kind="news",
             published=iso(published), image=_entry_image(e), ai_hint=True,
+            category_hint=category_hint,
         ))
+    return out
+
+
+def yahoo_watchlist(cfg: dict) -> list[dict]:
+    """Yahoo Finance headlines for the [markets] tickers, ten tickers per request."""
+    tickers = cfg.get("markets", {}).get("tickers", [])
+    out = []
+    for i in range(0, len(tickers), 10):
+        url = ("https://feeds.finance.yahoo.com/rss/2.0/headline?region=US&lang=en-US&s="
+               + ",".join(tickers[i:i + 10]))
+        try:
+            out += rss_feed({"name": "Yahoo Finance", "url": url, "match": "all"}, cfg,
+                            category_hint="markets")
+        except Exception as e:
+            log(f"Yahoo Finance failed for {tickers[i:i + 10]}: {e}")
     return out

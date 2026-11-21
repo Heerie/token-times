@@ -53,6 +53,7 @@ def collect(cfg: dict, token: str | None) -> list[dict]:
         "Lobsters": lambda: sources.lobsters(cfg),
         "Hugging Face models": lambda: sources.hf_trending_models(cfg),
         "Hugging Face papers": lambda: sources.hf_daily_papers(cfg),
+        "Yahoo Finance": lambda: sources.yahoo_watchlist(cfg),
     }
     for feed in cfg["sources"].get("rss", []):
         jobs[feed["name"]] = (lambda f=feed: sources.rss_feed(f, cfg))
@@ -109,14 +110,26 @@ def refresh_story(story: dict, c: dict) -> None:
 OFFICIAL = {"OpenAI", "Google DeepMind", "Google AI", "Hugging Face blog", "GitHub blog"}
 
 
-def prescore(c: dict) -> float:
-    """Order new items before the cap. News has no vote counts, so give it a prior."""
+def is_market_item(c: dict, cfg: dict) -> bool:
+    return c.get("category_hint") == "markets" or sources.mentions_watchlist(c["title"], cfg)
+
+
+def prescore(c: dict, cfg: dict) -> float:
+    """Order new items before the cap. News has no vote counts, so give it a prior;
+    market stories are the top priority, so they always make the cut."""
     score = engagement(c["signals"], len(c["sources"]))
     if c["kind"] == "news":
         score += 0.45
     if any(s["name"] in OFFICIAL for s in c["sources"]):
         score += 0.35
+    if is_market_item(c, cfg):
+        score += 1.0
     return score + (0.5 if c["ai_hint"] else 0)
+
+
+def pinned(s: dict, now, priority_hours: float) -> bool:
+    """Fresh market stories sit above everything else."""
+    return s.get("category") == "markets" and story_age_hours(s, now) <= priority_hours
 
 
 def story_age_hours(s: dict, now) -> float:
@@ -157,7 +170,7 @@ def main() -> int:
             refresh_story(by_id[cid], c)
 
     new = [c for cid, c in merged.items() if cid not in by_id and not (use_llm and cid in seen)]
-    new.sort(key=prescore, reverse=True)
+    new.sort(key=lambda c: prescore(c, cfg), reverse=True)
     new = new[: cfg["feed"]["max_new_candidates"]]
     log(f"{len(new)} new items to consider")
 
@@ -217,11 +230,14 @@ def main() -> int:
     stories = stories + added
     retention_h = cfg["feed"]["retention_days"] * 24
     stories = [s for s in stories if story_age_hours(s, now) <= retention_h and s.get("summary")]
-    stories.sort(key=lambda s: s["heat"] * 0.5 ** (story_age_hours(s, now) / HALF_LIFE_HOURS),
+    priority_hours = cfg.get("markets", {}).get("priority_hours", 36)
+    stories.sort(key=lambda s: (pinned(s, now, priority_hours),
+                                s["heat"] * 0.5 ** (story_age_hours(s, now) / HALF_LIFE_HOURS)),
                  reverse=True)
     stories = stories[: cfg["feed"]["max_items"]]
 
     write_json(FEED, {"generated_at": iso(now), "mode": mode, "half_life_hours": HALF_LIFE_HOURS,
+                      "priority_hours": priority_hours,
                       "model": cfg["llm"]["model"] if mode == "claude" else None,
                       "count": len(stories), "stories": stories})
     cutoff = iso(now - timedelta(days=14))

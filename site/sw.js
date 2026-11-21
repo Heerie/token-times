@@ -1,6 +1,6 @@
 // Offline support: app shell is served from cache and refreshed in the
 // background; the feed is network-first so it is never stale when online.
-const CACHE = "tt-v1";
+const CACHE = "tt-v2";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "manifest.webmanifest",
                "icons/icon.svg", "icons/icon-192.png"];
 

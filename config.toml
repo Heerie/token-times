@@ -3,7 +3,7 @@
 [feed]
 retention_days = 7          # drop stories older than this
 max_items = 250             # hard cap on stories kept in the feed
-max_new_candidates = 160    # most new items sent to Claude per run (cost control)
+max_new_candidates = 220    # most new items sent to Claude per run (cost control)
 
 [llm]
 # Claude picks stories, merges duplicates and writes the summaries.
@@ -21,15 +21,28 @@ model = "claude-sonnet-5-5"
 effort = "low"              # low | medium | high
 writer_batch_size = 8
 
+[markets]
+# Tech stocks to follow. Market stories (share moves, earnings, guidance,
+# analyst calls) about these or other big tech companies go to the top of the
+# feed while they are fresh, with a headline plus the reasoning behind it.
+tickers = ["NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "AMD", "AVGO", "TSM",
+           "ORCL", "PLTR", "ARM", "INTC", "MU", "CRWV", "ASML", "SMCI", "NFLX", "CRM"]
+companies = ["Nvidia", "Apple", "Microsoft", "Alphabet", "Google", "Amazon", "Meta", "Tesla",
+             "AMD", "Broadcom", "TSMC", "Oracle", "Palantir", "Arm Holdings", "Intel", "Micron",
+             "CoreWeave", "ASML", "Super Micro", "Netflix", "Salesforce", "OpenAI", "Anthropic",
+             "xAI", "SoftBank", "Samsung", "SK Hynix"]
+priority_hours = 36         # market stories stay pinned to the top for this long
+
 [interests]
 # Plain-language brief for the Claude editor. Rewrite it to taste.
 text = """
+- Highest priority: tech stock market news. Share-price moves, earnings, guidance, analyst calls, market-cap milestones and IPO trading for big tech and AI companies (Nvidia, Apple, Microsoft, Alphabet, Amazon, Meta, Tesla, AMD, Broadcom, TSMC, Oracle, Palantir and similar), and moves in tech or chip stocks as a group
 - GitHub repos gaining lots of stars quickly, especially AI tools, agents and developer tooling
 - New AI tools, coding agents, agent harnesses, Claude Code and Codex plugins, skills and MCP servers
 - New models (frontier and open-weight), benchmarks, architectures and notable research papers
 - AI politics: regulation, government policy, lawsuits, copyright, chips and export controls
-- Major AI industry news: launches, funding, IPOs, acquisitions, leadership changes
-Skip: minor version bumps, listicles, SEO filler, crypto, generic tech news with no AI angle.
+- Major AI industry news: launches, funding, acquisitions, leadership changes
+Skip: minor version bumps, listicles, SEO filler, crypto, stock-picking advice ("is X a buy?", "fairly valued?"), price predictions, generic tech news with no AI or market angle.
 """
 
 [sources]
@@ -40,94 +53,139 @@ github_topics = ["llm", "ai-agents", "mcp", "claude-code", "agent-skills"]
 hf_paper_min_upvotes = 8      # Hugging Face daily papers
 rss_max_age_hours = 48        # ignore feed entries older than this
 
-# ai_only = true means the feed is already about AI; false means entries
-# are kept only when they mention AI.
+# match decides which entries of a feed are kept:
+#   "all"  every entry (the feed is already on topic)
+#   "ai"   entries that mention AI
+#   "tech" entries that mention AI, a company in [markets], or tech/chip stocks
+
+# ---- tech stocks and markets
+[[sources.rss]]
+name = "CNBC"
+url = "https://www.cnbc.com/id/19854910/device/rss/rss.html"
+match = "tech"
+
+[[sources.rss]]
+name = "CNBC earnings"
+url = "https://www.cnbc.com/id/15839135/device/rss/rss.html"
+match = "tech"
+
+[[sources.rss]]
+name = "Bloomberg"
+url = "https://feeds.bloomberg.com/technology/news.rss"
+match = "tech"
+
+[[sources.rss]]
+name = "Bloomberg markets"
+url = "https://feeds.bloomberg.com/markets/news.rss"
+match = "tech"
+
+[[sources.rss]]
+name = "Financial Times"
+url = "https://www.ft.com/technology?format=rss"
+match = "tech"
+
+[[sources.rss]]
+name = "Benzinga"
+url = "https://www.benzinga.com/feed"
+match = "tech"
+
+[[sources.rss]]
+name = "Investing.com"
+url = "https://www.investing.com/rss/news_25.rss"
+match = "tech"
+
+[[sources.rss]]
+name = "MarketWatch"
+url = "https://feeds.content.dowjones.io/public/rss/mw_topstories"
+match = "tech"
+
+# ---- AI news
 [[sources.rss]]
 name = "TechCrunch"
 url = "https://techcrunch.com/category/artificial-intelligence/feed/"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "The Verge"
 url = "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Ars Technica"
 url = "https://arstechnica.com/ai/feed/"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "MIT Technology Review"
 url = "https://www.technologyreview.com/topic/artificial-intelligence/feed"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "The Decoder"
 url = "https://the-decoder.com/feed/"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Wired"
 url = "https://www.wired.com/feed/tag/ai/latest/rss"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "The Guardian"
 url = "https://www.theguardian.com/technology/artificialintelligenceai/rss"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Simon Willison"
 url = "https://simonwillison.net/atom/everything/"
-ai_only = false
+match = "ai"
 
 [[sources.rss]]
 name = "OpenAI"
 url = "https://openai.com/news/rss.xml"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Google DeepMind"
 url = "https://deepmind.google/blog/rss.xml"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Google AI"
 url = "https://blog.google/technology/ai/rss/"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Hugging Face blog"
 url = "https://huggingface.co/blog/feed.xml"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "GitHub blog"
 url = "https://github.blog/feed/"
-ai_only = false
+match = "ai"
 
 [[sources.rss]]
 name = "Latent Space"
 url = "https://www.latent.space/feed"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Import AI"
 url = "https://importai.substack.com/feed"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Interconnects"
 url = "https://www.interconnects.ai/feed"
-ai_only = true
+match = "all"
 
 [[sources.rss]]
 name = "Politico"
 url = "https://rss.politico.com/technology.xml"
-ai_only = false
+match = "ai"
 
 [[sources.rss]]
 name = "The Verge policy"
 url = "https://www.theverge.com/rss/policy/index.xml"
-ai_only = false
+match = "ai"

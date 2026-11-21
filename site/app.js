@@ -1,6 +1,7 @@
 "use strict";
 
 const CATEGORIES = {
+  markets: "Tech stocks",
   repos: "GitHub repos",
   tools: "Tools and agents",
   models: "Models and research",
@@ -99,10 +100,18 @@ function posterText(s) {
   return SOURCE_LABELS[s.sources[0]?.name] || s.sources[0]?.name || hostOf(s.url);
 }
 
-function score(s, now) {
+function ageHours(s, now) {
   const t = Date.parse(s.published || s.first_seen) || now;
-  const ageHours = Math.max(0, (now - t) / 36e5);
-  return (s.heat || 1) * Math.pow(0.5, ageHours / (feed.half_life_hours || 30));
+  return Math.max(0, (now - t) / 36e5);
+}
+
+function score(s, now) {
+  return (s.heat || 1) * Math.pow(0.5, ageHours(s, now) / (feed.half_life_hours || 30));
+}
+
+// Fresh market stories are the top priority: they sit above everything else.
+function pinned(s, now) {
+  return s.category === "markets" && ageHours(s, now) <= (feed.priority_hours || 36);
 }
 
 // ------------------------------------------------------------------ cards
@@ -132,6 +141,7 @@ function buildCard(s) {
   headline.textContent = s.title;
   headline.href = s.url;
   $(".summary", card).textContent = s.summary;
+  $(".why", card).hidden = s.category !== "markets";
   $(".attention", card).textContent = attention(s);
 
   const read = $(".read", card);
@@ -222,7 +232,7 @@ function render() {
       onAction: () => refresh(),
     }));
   } else {
-    const byScore = (a, b) => score(b, now) - score(a, now);
+    const byScore = (a, b) => (pinned(b, now) - pinned(a, now)) || (score(b, now) - score(a, now));
     const fresh = list.filter((s) => !seen.has(s.id)).sort(byScore);
     const old = list.filter((s) => seen.has(s.id)).sort(byScore);
     fresh.forEach((s) => feedEl.append(buildCard(s)));

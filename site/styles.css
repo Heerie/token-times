@@ -8,6 +8,7 @@
   --ink-2: #4B5567;
   --line: #D2D9E2;
 
+  --markets: #0B7A8F;  --markets-deep: #06343D;  --markets-tint: #C9F1F6;
   --repos: #1D7A50;    --repos-deep: #0E3B2A;    --repos-tint: #CDEFD9;
   --tools: #6A3FD0;    --tools-deep: #24124D;    --tools-tint: #E0D4FF;
   --models: #1C5BD4;   --models-deep: #0A2463;   --models-tint: #CFE0FF;
@@ -28,6 +29,7 @@
     --ink: #E7ECF3;
     --ink-2: #9BA8BA;
     --line: #253145;
+    --markets: #4CC9DB;
     --repos: #57CF92;
     --tools: #AE90FF;
     --models: #78A6FF;
@@ -38,6 +40,7 @@
   }
 }
 
+[data-cat="markets"]  { --accent: var(--markets);  --deep: var(--markets-deep);  --tint: var(--markets-tint); }
 [data-cat="repos"]    { --accent: var(--repos);    --deep: var(--repos-deep);    --tint: var(--repos-tint); }
 [data-cat="tools"]    { --accent: var(--tools);    --deep: var(--tools-deep);    --tint: var(--tools-tint); }
 [data-cat="models"]   { --accent: var(--models);   --deep: var(--models-deep);   --tint: var(--models-tint); }
@@ -234,6 +237,14 @@ body { overflow: hidden; }
   line-height: 1.5;
   text-wrap: pretty;
 }
+/* Market cards: headline states the move, this labels the reasoning under it. */
+.why {
+  margin: 2px 0 -4px;
+  color: var(--accent);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.why[hidden] { display: none; }
 .attention {
   margin: auto 0 0;
   padding-top: 4px;
